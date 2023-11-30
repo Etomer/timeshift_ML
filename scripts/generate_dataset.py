@@ -11,7 +11,7 @@ import h5py
 
 
 batch_simulate_at_same_locations = 25
-n_batches = 5000
+n_batches = 200
 dataset_size = n_batches*batch_simulate_at_same_locations
 
 # constants
@@ -25,11 +25,11 @@ speed_of_sound = 343
 
 
 fs = 16000
-max_freq = 10000
+max_freq = 4000
 max_freq_component_to_use = int(max_freq/(fs/sample_length))
 
 
-with h5py.File("./datasets/generated_dataset/generated_dataset.hdf5","w") as hdf5_file:
+with h5py.File("./datasets/generated_dataset/generated_dataset_val.hdf5","w") as hdf5_file:
 
     X = hdf5_file.create_dataset("input", (dataset_size,2,max_freq_component_to_use,2), dtype="f")
     Y = hdf5_file.create_dataset("gt", (dataset_size,1), dtype="f")
