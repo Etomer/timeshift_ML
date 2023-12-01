@@ -10,14 +10,14 @@ import torch
 import h5py
 from multiprocessing import Pool
 
-dataset_path = "./datasets/generated_dataset/generated_dataset" #path of where to create the dataset
+dataset_path = "./datasets/generated_dataset/generated_dataset_newer" #path of where to create the dataset
 
 n_core = 8 #number of cores to use
 piece_paths = [dataset_path + "_" +  str(i) + ".hdf5" for i in range(n_core)]
 
 
-batch_simulate_at_same_locations = 25
-n_batches = 200
+batch_simulate_at_same_locations = 1
+n_batches = 40000
 dataset_size = n_batches*batch_simulate_at_same_locations
 
 # constants
@@ -101,18 +101,18 @@ def create_dataset_piece(path):
         #torch.save(X,"./datasets/generated_dataset/input.pt")
         #torch.save(Y,"./datasets/generated_dataset/gt.pt")
 
-# if __name__ == '__main__':
-#     with Pool(n_core) as p:
-#         p.map(create_dataset_piece,piece_paths)
+if __name__ == '__main__':
+    with Pool(n_core) as p:
+        p.map(create_dataset_piece,piece_paths)
 
 
-#combine pieces to final dataset
+    #combine pieces to final dataset
 
-with h5py.File(dataset_path + ".hdf5","w") as hdf5_file:
-    X = hdf5_file.create_dataset("input", (n_core*dataset_size,2,max_freq_component_to_use,2), dtype="f")
-    Y = hdf5_file.create_dataset("gt", (n_core*dataset_size,1), dtype="f")
+    with h5py.File(dataset_path + ".hdf5","w") as hdf5_file:
+        X = hdf5_file.create_dataset("input", (n_core*dataset_size,2,max_freq_component_to_use,2), dtype="f")
+        Y = hdf5_file.create_dataset("gt", (n_core*dataset_size,1), dtype="f")
 
-    for i in range(n_core):
-        with h5py.File(piece_paths[i],"r") as hdf5_read_file:
-            X[i*dataset_size:(i+1)*dataset_size] = hdf5_read_file["input"]
-            Y[i*dataset_size:(i+1)*dataset_size] = hdf5_read_file["gt"]
+        for i in range(n_core):
+            with h5py.File(piece_paths[i],"r") as hdf5_read_file:
+                X[i*dataset_size:(i+1)*dataset_size] = hdf5_read_file["input"]
+                Y[i*dataset_size:(i+1)*dataset_size] = hdf5_read_file["gt"]
