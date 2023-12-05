@@ -10,21 +10,21 @@ import torch
 import h5py
 from multiprocessing import Pool
 
-dataset_path = "./datasets/generated_dataset/generated_dataset_newer" #path of where to create the dataset
+dataset_path = "./datasets/generated_dataset/generated_dataset_medium_biggest" #path of where to create the dataset
 
 n_core = 8 #number of cores to use
 piece_paths = [dataset_path + "_" +  str(i) + ".hdf5" for i in range(n_core)]
 
 
 batch_simulate_at_same_locations = 1
-n_batches = 40000
+n_batches = 20000
 dataset_size = n_batches*batch_simulate_at_same_locations
 
 # constants
 sample_length = 10000
 extra_bit = 1000
 
-reflection_coeff = 0.05
+reflection_coeff = 0.5
 scatter_coeff = 0.15
 
 speed_of_sound = 343
