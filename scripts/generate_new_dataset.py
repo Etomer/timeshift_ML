@@ -13,7 +13,7 @@ import h5py
 sample_length = 10000
 extra_bit = 1000
 
-reflection_coeff = 0.5
+reflection_coeff = 0.99
 scatter_coeff = 0.15
 
 speed_of_sound = 343
@@ -24,8 +24,8 @@ max_freq = 4000
 max_freq_component_to_use = int(max_freq/(fs/sample_length))
 
 
-n_rooms = 20
-n_mics = 17 
+n_rooms = 200
+n_mics = 51 
 rir_len = 1600
 
 fs = 16000
@@ -33,7 +33,7 @@ fs = 16000
 # X = np.zeros((n_rooms,n_mics,rir_len))
 # Y = np.zeros((n_rooms,n_mics))
 
-with h5py.File("./datasets/generated_dataset/new_type_dataset_medium.hdf5","w") as hdf5_file:
+with h5py.File("./datasets/generated_dataset/new_type_dataset_easy.hdf5","w") as hdf5_file:
     X = hdf5_file.create_dataset("input", (n_rooms,n_mics,rir_len), dtype="f")
     Y = hdf5_file.create_dataset("gt", (n_rooms,n_mics), dtype="f")
     
