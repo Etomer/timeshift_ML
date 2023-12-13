@@ -5,6 +5,15 @@ __pycache__/*
 # Data folders
 datasets/*
 
+# Models folder
+models/*
+
+# wandb data-folder
+scripts/wandb/*
+wandb/*
+
+#nohup
+nohup.out
 
 # Compiled source #
 ###################

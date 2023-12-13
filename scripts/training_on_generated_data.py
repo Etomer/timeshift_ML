@@ -30,7 +30,7 @@ config = {
     "epochs" : 200,
     "sample_length" : 10000,
     "max_shift" : 100,
-    "lr" : 1e-4,
+    "lr" : 3e-5,
     "n_batch_before_print" : 10,
 }
 

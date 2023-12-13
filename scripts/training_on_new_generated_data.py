@@ -21,28 +21,28 @@ use_wandb = True
 
 
 data_folder = "./datasets/generated_dataset/"
-device = 'cuda:1' if torch.cuda.is_available() else ('mps' if torch.backends.mps.is_available() else 'cpu')
+device = 'cuda:0' if torch.cuda.is_available() else ('mps' if torch.backends.mps.is_available() else 'cpu')
 
 
 
 config = {
+    #"continue_training_from_checkpoint" : "./models/new_type_dataset_medium_divine-shadow-51_190.pth",
     "dropout" : 0.1,
-    "batch_size" : 11, 
+    "batch_size" : 30, 
     "max_shift" : 500, # ~10 meters
     "guess_grid_size" : 100,
     "dataset" : "new_type_dataset_medium.hdf5",
     "cnn_output_size_at_factor_1" : 576,
     "factor" : 10,
     "loss_fn" : "cross_entropy",
-    "epochs" : 200,
+    "epochs" : 1000,
     "sample_length" : 10000,
-    "max_shift" : 100,
     "lr" : 3e-5,
-    "n_batch_before_print" : 10,
+    "n_batch_before_print" : 3,
     "max_freq" : 2500,
     "rir_len" : 1600,
-    "rooms_per_batch" : 50,
-    "mics_per_batch" : 11,
+    "rooms_per_batch" : 30,
+    "mics_per_batch" : 15,
     "warmup_steps_per_epoch" : 5,
     "warmup_epochs" : 2,
 }
@@ -109,8 +109,8 @@ with wandb.init(config=config) as run:
                 nn.Dropout(config["dropout"]),
                 nn.Linear(config["factor"]*config["cnn_output_size_at_factor_1"],1000),
                 nn.GELU(),
-                Block(1000),
-                Block(1000),
+                #Block(1000),
+                #Block(1000),
                 nn.Linear(1000,config["guess_grid_size"])
             )
             
@@ -131,11 +131,11 @@ with wandb.init(config=config) as run:
 
         def _init_weights(self, module):
             if isinstance(module, nn.Linear):
-                torch.nn.init.normal_(module.weight, mean=0.0, std=0.0002)
+                torch.nn.init.normal_(module.weight, mean=0.0, std=0.00002)
                 if module.bias is not None:
                     torch.nn.init.zeros_(module.bias)
             elif isinstance(module, nn.Embedding):
-                torch.nn.init.normal_(module.weight, mean=0.0, std=0.0002)
+                torch.nn.init.normal_(module.weight, mean=0.0, std=0.00002)
             
                     
         def forward(self, x):
@@ -144,6 +144,8 @@ with wandb.init(config=config) as run:
             return x
         
     model = Classifier().to(device)
+    if config["continue_training_from_checkpoint"]:
+        model = torch.load(config["continue_training_from_checkpoint"])
 
     if config["loss_fn"] == "cross_entropy":
         loss_fn = torch.nn.CrossEntropyLoss()
@@ -273,7 +275,7 @@ with wandb.init(config=config) as run:
         
         train(train_dl, model, loss_fn, optimizer,scheduler, warm_up=(t<config["warmup_epochs"]))
         
-        if t % 10 == 0:
+        if t % 100 == 0:
             torch.save(model, "./models/" + config["dataset"].split(".")[0]+ "_" + run.name + "_" + str(t) +".pth")
 
     print("Done!")
