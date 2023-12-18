@@ -4,9 +4,9 @@ __pycache__/*
 
 # Data folders
 datasets/*
+data/*
+runs/*
 
-# Models folder
-models/*
 
 # wandb data-folder
 scripts/wandb/*
