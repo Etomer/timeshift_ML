@@ -48,12 +48,12 @@ config = {
     "max_freq" : 2500, #component
     "rir_len" : 1600,
     "sample_length" : 10000,
-    "max_shift" : 100, # ~10 meters
+    "max_shift" : 500, # ~10 meters
     
     # Optimization config
     "loss_fn" : "cross_entropy",
     "optimizer" : "adamw",
-    "lr" : 1e-4,
+    "lr" : 3e-4,
     "epochs" : 1000,
     "warmup_steps_per_epoch" : 5,
     "warmup_epochs" : 2,
@@ -142,13 +142,13 @@ with wandb.init(config=config) if use_wandb else nullcontext() as run:
             """
             #pull a random sound
             sound_paths = glob(os.path.join(reference_sound_folder, "*.wav"))
-            sound_path = sound_paths[np.random.randint(len(sound_paths))]
-            fs,signal = wavfile.read(sound_path)
-            start = np.random.randint(0,len(signal) - config["sample_length"] - config["rir_len"]-1, X.shape[0])
             # simulate longer sound and then cut to the relevant piece
             signals = np.zeros((X.shape[0], config["sample_length"] + config["rir_len"]-1))
             for i in range(X.shape[0]):
-                signals[i,:] = signal[start[i]:start[i]  + config["sample_length"] + config["rir_len"]-1]
+                sound_path = sound_paths[np.random.randint(len(sound_paths))]
+                fs,signal = wavfile.read(sound_path)
+                start = np.random.randint(0,len(signal) - config["sample_length"] - config["rir_len"]-1)
+                signals[i,:] = signal[start:start + config["sample_length"] + config["rir_len"]-1]
             #signals = torch.tensor(signals).to(torch.float32).to(device).unsqueeze(1)
             signals = torch.tensor(signals).to(torch.float32).unsqueeze(1)
 
