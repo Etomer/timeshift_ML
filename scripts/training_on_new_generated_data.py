@@ -22,7 +22,7 @@ import sys
 
 import wandb
 
-use_wandb = False # Note, only set to False when testing files, models will not be saved properly without this
+use_wandb = True # Note, only set to False when testing files, models will not be saved properly without this
 
 
 data_folder = "./data/datasets/"
@@ -34,31 +34,31 @@ device = 'cuda:1' if torch.cuda.is_available() else ('mps' if torch.backends.mps
 
 
 config = {
-    "dataset" : "impulse_response_easy_evaluation.hdf5",
+    "dataset" : "impulse_response_medium.hdf5",
 
     # Network model config
-    "model" : "cnn_model",
+    "model" : "cnn_model_block",
     "cnn_output_size_at_factor_1" : 576,
     "scale_factor" : 10,
     "continue_training_from_checkpoint" : False, #"./models/new_type_dataset_medium_divine-shadow-51_190.pth",
     "dropout" : 0.1,
-    "guess_grid_size" : 100,
+    "guess_grid_size" : 500,
     
     # problem specific config
     "max_freq" : 2500, #component
     "rir_len" : 1600,
     "sample_length" : 10000,
-    "max_shift" : 500, # ~10 meters
+    "max_shift" : 100, # ~10 meters
     
     # Optimization config
     "loss_fn" : "cross_entropy",
     "optimizer" : "adamw",
-    "lr" : 3e-5,
+    "lr" : 1e-4,
     "epochs" : 1000,
     "warmup_steps_per_epoch" : 5,
     "warmup_epochs" : 2,
-    "rooms_per_batch" : 100,
-    "mics_per_batch" : 3,
+    "rooms_per_batch" : 50,
+    "mics_per_batch" : 11,
     "n_batch_before_print" : 3,
 }
 sys.path.append(model_folder)
@@ -158,6 +158,7 @@ with wandb.init(config=config) if use_wandb else nullcontext() as run:
             q = torch.concatenate([torch.concatenate([q,q.roll(i+1, 1)], dim=2) for i in range(config["mics_per_batch"] // 2)],dim=1) # organize sounds pairwise
             q = q.view(X.shape[0]*(config["mics_per_batch"]*(config["mics_per_batch"] - 1 ))//2, 2,-1) # reshape so that each example is a row
             X = torch.concatenate([q.real,q.imag],dim=1)
+            X /= X.std(dim=2).mean(dim=1).unsqueeze(1).unsqueeze(2) + 1e-5 # avoid dividing by 0
             y = torch.concatenate([y - y.roll(i+1,1) for i in range(config["mics_per_batch"]//2)],dim=1).view(-1)*fs/343 # compute gt for all pairs
             y = y_to_class_gt(y, config["guess_grid_size"], config["max_shift"]).to(torch.long)
             
@@ -214,6 +215,8 @@ with wandb.init(config=config) if use_wandb else nullcontext() as run:
                     
                     # Compute prediction error
                     X,y = format_simulated_data(X,y)
+                    
+                    
                     X = X.to(device)
                     y = y.to(device)
                     pred = model(X)
